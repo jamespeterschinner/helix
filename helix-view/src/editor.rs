@@ -62,6 +62,8 @@ use arc_swap::{
     ArcSwap,
 };
 
+use std::process::Command;
+
 pub const DEFAULT_AUTO_SAVE_DELAY: u64 = 3000;
 
 fn deserialize_duration_millis<'de, D>(deserializer: D) -> Result<Duration, D::Error>
@@ -2109,6 +2111,17 @@ impl Editor {
         let current_view = self.tree.focus;
         if let Some(id) = self.tree.find_split_in_direction(current_view, direction) {
             self.focus(id)
+        } else {
+            let tmux_direction = match direction {
+                tree::Direction::Up => "-U",
+                tree::Direction::Down => "-D",
+                tree::Direction::Left => "-L",
+                tree::Direction::Right => "-R",
+            };
+            let _ = Command::new("tmux")
+                .arg("select-pane")
+                .arg(tmux_direction)
+                .status();
         }
     }
 
